@@ -6,7 +6,12 @@ import {
   isValidEmail,
   isValidUUID,
 } from "../../utils/index.js";
-import { createUserServices, getAllUsersServices, getUserByIdServices } from "./users.services.js";
+import {
+  createUserServices,
+  getAllUsersServices,
+  getUserByIdServices,
+  updateUserService,
+} from "./users.services.js";
 
 export const getAllUsers = async (req, res) => {
   const { limit, active, offset } = req.query;
@@ -105,16 +110,92 @@ export const createUser = async (req, res) => {
       throw error;
     }
 
-    const createUser = await createUserServices({name, email})
-	console.log("TCL: createUser -> controller", createUser)
+    const createUser = await createUserServices({ name, email });
+    console.log("TCL: createUser -> controller", createUser);
     return res.status(201).json({
-        message:"Create User",
-        data:createUser || {}
-    })
-
-
+      message: "Create User",
+      data: createUser || {},
+    });
   } catch (error) {
     const message = error.message || "Internal error server";
+    const status = error.statusCode || 500;
+
+    res.status(status).json({
+      message,
+      status,
+    });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, active } = req.body;
+
+  try {
+    if (!isValidUUID(id)) {
+      const error = new Error(listCode.isNotuudd.message);
+      error.statusCode = listCode.isNotuudd.status;
+      throw error;
+    }
+
+    const hasName = name !== undefined;
+    const hasEmail = email !== undefined;
+    const hasActive = active !== undefined;
+
+    if (!hasName && !hasEmail && !hasActive) {
+      const error = new Error(listCode.updateNoBody.message);
+      error.statusCode = listCode.updateNoBody.status;
+      throw error;
+    }
+
+    if (hasName) {
+      if (typeof name !== "string" || !isNameValid(name)) {
+        const error = new Error(listCode.createUSerNameInvalidError.message);
+        error.statusCode = listCode.createUSerNameInvalidError.status;
+        throw error;
+      }
+    }
+
+    if (hasEmail) {
+      if (typeof email !== "string" || !isValidEmail(email)) {
+        const error = new Error(listCode.createUSerEmailInvalidError.message);
+        error.statusCode = listCode.createUSerEmailInvalidError.status;
+        throw error;
+      }
+    }
+
+    if (hasActive) {
+      if (typeof active !== "boolean") {
+        const error = new Error(listCode.isNotBoolean.message);
+        error.statusCode = listCode.isNotBoolean.status;
+        throw error;
+      }
+    }
+
+    const updatePayload = { id };
+
+    if (hasName) updatePayload.name = name;
+    if (hasEmail) updatePayload.email = email;
+    if (hasActive) updatePayload.active = active;
+
+    const updated = await updateUserService(updatePayload);
+
+    if (!updated) {
+      const message = listCode.userExist.message;
+      const status = listCode.userExist.status;
+      return res.status(status).json({
+        message,
+        status,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Usuario actualizado",
+      data: updated,
+    });
+  } catch (error) {
+    console.error("Error en updateUser", error);
+    const message = error.message || "Internal server error";
     const status = error.statusCode || 500;
 
     res.status(status).json({

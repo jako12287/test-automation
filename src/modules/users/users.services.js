@@ -58,14 +58,35 @@ export const createUserServices = async ({ name, email, active = true }) => {
   } catch (error) {
     console.error("create user error", error.code);
     const err = new Error(
-      (error.code === "23505"
+      error.code === "23505"
         ? listCode.emailAlreadyExists.message
-        : "Internal error server"),
+        : "Internal error server",
     );
-    err.statusCode = error.code === "23505"
-      ? listCode.emailAlreadyExists.status
-      : 500;
+    err.statusCode =
+      error.code === "23505" ? listCode.emailAlreadyExists.status : 500;
 
+    throw err;
+  }
+};
+
+export const updateUserService = async ({ name, email, active, id }) => {
+  try {
+    const { rows } = await pool.query(
+      `update users set name = $1, email = $2, active = $3 where id = $4 returning id, name, email, active, created_at`,
+      [name.trim().toLowerCase(), email.toLowerCase(), active, id],
+    );
+    console.log("TCL: updateUserService -> rows", rows);
+
+    return rows[0];
+  } catch (error) {
+    console.error("update user error", error);
+    const err = new Error(
+      error.code === "23505"
+        ? listCode.emailAlreadyExists.message
+        : "Internal server error",
+    );
+    err.statusCode =
+      error.code === "23505" ? listCode.emailAlreadyExists.status : 500;
     throw err;
   }
 };

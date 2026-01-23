@@ -39,4 +39,12 @@ export const listCode = {
     status: 409,
     message: "El email ya existe",
   },
+  updateNoBody: {
+    status: 400,
+    message: "Se necesita el nombre, email o el status del usuario para actualizar",
+  },
+  isNotBoolean: {
+    status: 400,
+    message: "Se necesita que el status sea un boolean valido",
+  },
 };
