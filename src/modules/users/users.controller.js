@@ -8,6 +8,7 @@ import {
 } from "../../utils/index.js";
 import {
   createUserServices,
+  deleteUserService,
   getAllUsersServices,
   getUserByIdServices,
   updateUserService,
@@ -195,6 +196,36 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error en updateUser", error);
+    const message = error.message || "Internal server error";
+    const status = error.statusCode || 500;
+
+    res.status(status).json({
+      message,
+      status,
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!isValidUUID(id)) {
+      const err = new Error(listCode.isNotuudd.message);
+      err.statusCode = listCode.isNotuudd.status;
+      throw err;
+    }
+
+    const userDelete = await deleteUserService(id);
+    if (!userDelete) {
+      const error = new Error(listCode.userExist.message);
+      error.statusCode = listCode.userExist.status;
+      throw error;
+    }
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error("error en controlador deleteUser", error);
+
     const message = error.message || "Internal server error";
     const status = error.statusCode || 500;
 
