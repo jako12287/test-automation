@@ -1,4 +1,5 @@
 import pool from "../../config/db.js";
+import { createHttpError } from "../../errors/httpError.js";
 import { listCode } from "../../statusCodes/index.js";
 
 export const getAllUsersServices = async ({
@@ -21,10 +22,11 @@ export const getAllUsersServices = async ({
       return rows;
     }
   } catch (error) {
-    console.error("Error en getAllUsersServices", error);
-    const errors = new Error(listCode.getAllUsersError.message);
-    errors.statusCode = listCode.getAllUsersError.status;
-    throw errors;
+    throw createHttpError(
+      listCode.getAllUsersError.status,
+      listCode.getAllUsersError.message,
+      { pgCode: error.code },
+    );
   }
 };
 
@@ -40,10 +42,11 @@ export const getUserByIdServices = async (id) => {
     }
     return rows[0];
   } catch (error) {
-    console.error("Error en getUserById", error);
-    const errors = new Error(listCode.getUserByIdError.message);
-    errors.statusCode = listCode.getUserByIdError.status;
-    throw errors;
+    throw createHttpError(
+      listCode.getUserByIdError.status,
+      listCode.getUserByIdError.message,
+      { pgCode: error.code },
+    );
   }
 };
 
@@ -56,16 +59,13 @@ export const createUserServices = async ({ name, email, active = true }) => {
 
     return rows[0];
   } catch (error) {
-    console.error("create user error", error.code);
-    const err = new Error(
-      error.code === "23505"
-        ? listCode.emailAlreadyExists.message
-        : "Internal error server",
-    );
-    err.statusCode =
-      error.code === "23505" ? listCode.emailAlreadyExists.status : 500;
-
-    throw err;
+    if (error.code === "23505") {
+      throw createHttpError(
+        listCode.emailAlreadyExists.status,
+        listCode.emailAlreadyExists.message,
+      );
+    }
+    throw createHttpError(500, "Internal server error", { pgCode: error.code });
   }
 };
 
@@ -97,35 +97,23 @@ export const updateUserService = async ({ name, email, active, id }) => {
 
     values.push(id);
 
-    console.log("setparts", setParts);
-    console.log("values", values);
-
     const psql = `UPDATE users
     SET ${setParts.join(", ")} 
     WHERE id = $${idx}
     RETURNING id, name, email, active, created_at;`;
 
-    console.log("TCL: updateUserService -> psql", psql);
     const { rows } = await pool.query(psql, values);
 
     return rows[0] ?? null;
   } catch (error) {
-    console.log("error en updateUserService", error);
-
-    if (error && error.code === "23505") {
-      const err = new Error(
-        error.code === "23505"
-          ? listCode.emailAlreadyExists.message
-          : "Internal server error",
+    if (error.code === "23505") {
+      throw createHttpError(
+        listCode.emailAlreadyExists.status,
+        listCode.emailAlreadyExists.message,
       );
-      err.statusCode =
-        error.code === "23505" ? listCode.emailAlreadyExists.status : 500;
-      throw err;
     }
 
-    const err = new Error("Internal server error");
-    err.statusCode = 500;
-    throw err;
+    throw createHttpError(500, "Internal server error", { pgCode: error.code });
   }
 };
 
@@ -136,9 +124,6 @@ export const deleteUserService = async (id) => {
 
     return rows[0] ?? null;
   } catch (error) {
-    console.log("error en deleteUserService", error);
-    const err = new Error("Internal server error");
-    err.statusCode = 500;
-    throw err;
+    throw createHttpError(500, "Internal server error", { pgCode: error.code });
   }
 };

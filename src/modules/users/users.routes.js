@@ -1,12 +1,19 @@
-import { Router } from "express"
-import { createUser, deleteUser, getAllUsers, getUserById, updateUser } from "./users.controller.js"
+import { Router } from "express";
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  getUserById,
+  updateUser,
+} from "./users.controller.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 
-const router = Router()
+const router = Router();
 
-router.get("/", getAllUsers)
-router.get("/:id", getUserById)
-router.post("/create", createUser)
-router.put("/:id", updateUser)
-router.delete("/:id", deleteUser)
+router.get("/", asyncHandler(getAllUsers));
+router.get("/:id", asyncHandler(getUserById));
+router.post("/", asyncHandler(createUser));
+router.put("/:id", asyncHandler(updateUser));
+router.delete("/:id", asyncHandler(deleteUser));
 
-export default router
+export default router;
