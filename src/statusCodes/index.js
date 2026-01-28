@@ -47,4 +47,14 @@ export const listCode = {
     status: 400,
     message: "Se necesita que el status sea un boolean valido",
   },
+  verifyCredentials:{
+    status:404,
+    message:"Verifica las credenciales, el email o el password no son correctos"
+  },
+  verifyPass:{
+    status:404,
+    message:"La contrasena debe ser minimo de 6 caracteres"
+
+  }
+
 };

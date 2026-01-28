@@ -4,6 +4,7 @@ import {
   isboolean,
   isNameValid,
   isNumber,
+  isPasswordValid,
   isValidEmail,
   isValidUUID,
 } from "../../utils/index.js";
@@ -75,7 +76,7 @@ export const getUserById = async (req, res) => {
 };
 
 export const createUser = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
   if (!name?.trim() || !email?.trim()) {
     throw createHttpError(
       listCode.createUserNoNameOrEmailError.status,
@@ -97,7 +98,14 @@ export const createUser = async (req, res) => {
     );
   }
 
-  const createUser = await createUserServices({ name, email });
+  if (!isPasswordValid(password)) {
+    throw createHttpError(
+      listCode.verifyPass.status,
+      listCode.verifyPass.message,
+    );
+  }
+
+  const createUser = await createUserServices({ name, email, password });
   return res.status(201).json({
     message: "Create User",
     data: createUser || {},

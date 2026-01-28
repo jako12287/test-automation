@@ -1,6 +1,7 @@
 import pool from "../../config/db.js";
 import { createHttpError } from "../../errors/httpError.js";
 import { listCode } from "../../statusCodes/index.js";
+import bcrypt from "bcrypt";
 
 export const getAllUsersServices = async ({
   limitNumber,
@@ -10,7 +11,7 @@ export const getAllUsersServices = async ({
   try {
     if (activeBoolean === undefined) {
       const { rows } = await pool.query(
-        `select id, name, email, active, created_at from users order by created_at desc limit $1 offset $2;`,
+        `select id, name, email, active, role, created_at from users order by created_at desc limit $1 offset $2;`,
         [limitNumber, offsetNumber],
       );
       return rows;
@@ -50,11 +51,18 @@ export const getUserByIdServices = async (id) => {
   }
 };
 
-export const createUserServices = async ({ name, email, active = true }) => {
+export const createUserServices = async ({
+  name,
+  email,
+  active = true,
+  password,
+  role = "user",
+}) => {
   try {
+    const passwordHash = await bcrypt.hash(password.trim(), 10);
     const { rows } = await pool.query(
-      `insert into users (name, email, active) values ($1, $2, $3) returning id, name, email, active, created_at`,
-      [name.toLowerCase(), email.toLowerCase(), active],
+      `insert into users (name, email, active, password, role) values ($1, $2, $3, $4, $5) returning id, name, email, active, role, created_at`,
+      [name.toLowerCase(), email.toLowerCase(), active, passwordHash, role],
     );
 
     return rows[0];

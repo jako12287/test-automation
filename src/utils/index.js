@@ -23,11 +23,12 @@ export const isValidEmail = (email) => {
   return regex.test(email);
 };
 
-export const isNameValid =(name)=>{
+export const isNameValid = (name) => {
+  const isvalid = name.trim().length >= 2;
+  return isvalid;
+};
 
- const isvalid = (name.trim().length >= 2)
-
-
-    return isvalid
-
-}
+export const isPasswordValid = (password) => {
+  const isValid = password.trim().length >= 6;
+  return isValid;
+};
