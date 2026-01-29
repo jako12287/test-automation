@@ -48,13 +48,33 @@ export const listCode = {
     message: "Se necesita que el status sea un boolean valido",
   },
   verifyCredentials:{
-    status:404,
+    status:401,
     message:"Verifica las credenciales, el email o el password no son correctos"
   },
   verifyPass:{
     status:404,
     message:"La contrasena debe ser minimo de 6 caracteres"
 
+  },
+  missingAuth:{
+    status:401,
+    message:"Missing Authorization header"
+  },
+  invalidAuth:{
+    status:401,
+    message:"Invalid Authorization format"
+  },
+   expiredAuth:{
+    status:401,
+    message:"Invalid or expired token"
+  },
+  notAuth:{
+    status:401,
+    message:"Not authenticated"
+  },
+  Forbidden:{
+    status:403,
+    message:"Forbiden"
   }
 
 };

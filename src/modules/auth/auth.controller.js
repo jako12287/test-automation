@@ -17,8 +17,9 @@ export const loginController = async (req, res) => {
     });
 
   const plainPassword = password ?? null;
+  const normalizeEmail = email.trim().toLowerCase();
 
-  if (!email?.trim() || !isValidEmail(email.trim())) {
+  if (!normalizeEmail || !isValidEmail(normalizeEmail)) {
     throw createHttpError(
       listCode.createUSerEmailInvalidError.status,
       listCode.createUSerEmailInvalidError.message,
@@ -31,7 +32,7 @@ export const loginController = async (req, res) => {
       listCode.verifyCredentials.message,
     );
   }
-  const searchUSer = await userExistService(email.trim());
+  const searchUSer = await userExistService(normalizeEmail);
 
   if (!searchUSer) {
     throw createHttpError(

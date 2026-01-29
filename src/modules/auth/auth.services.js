@@ -5,7 +5,7 @@ export const userExistService = async (email) => {
   try {
     const psql = `select id, name, email, role, password from users where email = $1;`;
 
-    const { rows } = await pool.query(psql, [email.trim().toLowerCase()]);
+    const { rows } = await pool.query(psql, [email]);
 
     return rows[0] ?? null;
   } catch (error) {
